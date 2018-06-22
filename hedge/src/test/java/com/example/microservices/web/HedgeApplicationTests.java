@@ -1,4 +1,4 @@
-package com.example.microservices.hedge;
+package com.example.microservices.web;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -1,16 +1,22 @@
-package com.example.microservices.hedge;
+package com.example.microservices.web;
 
 import java.math.BigDecimal;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
+import com.example.microservices.HedgeApplication;
+import com.example.microservices.dao.HedgeRepository;
 import com.example.microservices.model.Hedge;
+import com.example.microservices.rate.Rate;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,6 +42,9 @@ public class HedgeControllerTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
+    @Autowired
+    private HedgeRepository hedgeRepository;
+
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(8089);
 
@@ -59,6 +68,26 @@ public class HedgeControllerTest {
         assertThat(hedges.get(0).getRate().getRate(), is(BigDecimal.valueOf(20)));
 
         log.info("Hedges: {}", hedges);
+
+    }
+
+    @Test
+    @Ignore
+    public void generateGedges() {
+        insertHedges();
+    }
+
+    private void insertHedges() {
+
+        Rate rate = Rate.builder()
+                .date(LocalDate.now())
+                .rate(BigDecimal.valueOf(10))
+                .uuid(UUID.randomUUID().toString())
+                .build();
+
+        hedgeRepository.insert(Arrays.asList(new Hedge("1", "TestH-1", rate),
+                new Hedge("2", "TestH-2", rate),
+                new Hedge("3", "TestH-3", rate)));
 
     }
 
