@@ -51,6 +51,8 @@ public class HedgeControllerTest {
     @Test
     public void findHedges() throws Exception {
 
+        insertHedges();
+
         URI uri = ClassLoader.getSystemResource("data/rate.json").toURI();
         String testResponse = new String (Files.readAllBytes(Paths.get(uri)),
                 Charset.forName("UTF-8"));
@@ -65,7 +67,9 @@ public class HedgeControllerTest {
 
         List<Hedge> hedges = Arrays.asList(response.getBody());
         assertThat(hedges.size(), is(3));
-        assertThat(hedges.get(0).getRate().getRate(), is(BigDecimal.valueOf(20)));
+        assertThat(hedges.get(0).getRate().getRate(), is(BigDecimal.valueOf(10)));
+        assertThat(hedges.get(0).getId(), is("1"));
+        assertThat(hedges.get(0).getNickName(), is("TestH-1"));
 
         log.info("Hedges: {}", hedges);
 
