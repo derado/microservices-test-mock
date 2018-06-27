@@ -1,7 +1,9 @@
 package com.example.microservices.web;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -16,6 +18,7 @@ import com.example.microservices.model.Hedge;
 import com.example.microservices.rate.Rate;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -48,20 +51,15 @@ public class HedgeControllerTest {
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(8089);
 
+    @After
+    public void tearDown() {
+        hedgeRepository.deleteAll();
+    }
+
     @Test
-    public void findHedges() throws Exception {
+    public void findHedges() {
 
         insertHedges();
-
-        URI uri = ClassLoader.getSystemResource("data/rate.json").toURI();
-        String testResponse = new String (Files.readAllBytes(Paths.get(uri)),
-                Charset.forName("UTF-8"));
-
-        wireMockRule.stubFor(get(urlPathEqualTo("/rate"))
-                .willReturn(aResponse()
-                        .withHeader(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                        .withBody(testResponse)
-                        .withStatus(200)));
 
         ResponseEntity<Hedge[]> response = restTemplate.getForEntity("/hedges", Hedge[].class);
 
@@ -76,8 +74,30 @@ public class HedgeControllerTest {
     }
 
     @Test
+    public void testSave() throws URISyntaxException, IOException {
+
+        URI uri = ClassLoader.getSystemResource("data/rate.json").toURI();
+        String testResponse = new String (Files.readAllBytes(Paths.get(uri)),
+                Charset.forName("UTF-8"));
+
+        wireMockRule.stubFor(get(urlPathEqualTo("/rate"))
+                .willReturn(aResponse()
+                        .withHeader(CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                        .withBody(testResponse)
+                        .withStatus(200)));
+
+        Hedge testHedge = new Hedge("testUuid", "test_hedge", Rate.builder().rate(BigDecimal.ONE).build());
+
+        ResponseEntity<Hedge> responseEntity = restTemplate.postForEntity("/hedges", testHedge, Hedge.class);
+        Hedge savedHedge = responseEntity.getBody();
+
+        assertThat(savedHedge.getRate().getRate(), is(BigDecimal.valueOf(20)));
+
+    }
+
+    @Test
     @Ignore
-    public void generateGedges() {
+    public void generateHedges() {
         insertHedges();
     }
 

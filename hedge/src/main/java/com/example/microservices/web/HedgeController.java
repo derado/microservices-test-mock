@@ -31,7 +31,7 @@ public class HedgeController {
 
     }
 
-    @PostMapping("hedges")
+    @PostMapping("/hedges")
     public Hedge save(Hedge hedge) {
 
         Rate rate = rateClient.findRate();
